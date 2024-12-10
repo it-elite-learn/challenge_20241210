@@ -38,6 +38,7 @@ public class Book
     public int Id { get; set; }
     public string Title { get; set; }
     public string ISBN { get; set; }
+    public int Length {get; set;} // in Pages
     public int PublicationYear { get; set; }
     public int AuthorId { get; set; }
     public Author Author { get; set; }
@@ -86,7 +87,7 @@ public class BookLoan
 Create generic repository interfaces and implementations
 
 ```csharp
-public interface IRepository<T> where T : class
+public interface IRepository<T> where T : BaseEntity
 {
     Task<T> GetByIdAsync(int id);
     Task<IEnumerable<T>> GetAllAsync();
@@ -98,6 +99,9 @@ public interface IRepository<T> where T : class
 
 
 #### Edpoints
+
+- Make sure to choose the right return types
+- Consider using DTOs if neccessary
 
 Controller for Authors
 ```csharp
@@ -128,8 +132,7 @@ Controller for Books
 Get(
     [FromQuery] string title = null, 
     [FromQuery] int? authorId = null,
-    [FromQuery] int pageNumber = 1, 
-    [FromQuery] int pageSize = 10)
+    [FromQuery] int pageSize = 10) // >= Book.Length
 
 // GET: api/Books/5
 [HttpGet("{id}")]
@@ -147,4 +150,21 @@ Put(int id, [FromBody] Book book)
 // DELETE: api/Books/5
 [HttpDelete("{id}")]
 Delete(int id)
+```
+
+Controller for lending and returning a book
+```csharp
+    // Create a new book loan
+    [HttpPost]
+    Post([FromBody] BookLoan loan)
+
+    // Return a book
+    // id => BookLoand.Id
+    // api/<controller>/<id>/return
+    [HttpPut("{id}/return")]
+    Put(int id)
+
+    // Get active loans for a member
+    [HttpGet("member/{memberId}")]
+    GetActiveLoansByMember(int memberId)
 ```
